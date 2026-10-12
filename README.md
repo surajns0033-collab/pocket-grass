@@ -10,6 +10,8 @@
 [![Hosted on DigitalOcean](https://img.shields.io/badge/hosted%20on-DigitalOcean-0080FF.svg?logo=digitalocean&logoColor=white)](https://www.digitalocean.com/)
 [![Hacktoberfest 2026](https://img.shields.io/badge/Hacktoberfest-2026%20Week%201-ff6b00.svg)](https://dev.to/challenges/hacktoberfest-week1-2026-10-05)
 
+**[Try it live → pocket-grass-ct89s.ondigitalocean.app](https://pocket-grass-ct89s.ondigitalocean.app/)**
+
 </div>
 
 ---
@@ -31,6 +33,7 @@ It is built for the [Hacktoberfest Open-Source AI Challenge, Week 1: Touch Grass
 - **Phone-away timer**: a plain countdown, then an optional one-line note.
 - **Private by default**: notes are stored in `localStorage` on your device. There is no database and no sign-in.
 - **Runs two ways**: Gemma 3 270M on your own machine, or Gemma 4 31B on DigitalOcean Gradient when a key is set.
+- **Never stuck**: if the model is warming up, busy, slow, or returns a bad line, you get a card from a hand-written starter deck matched to your place, sense, and sky. Each card says where it came from.
 
 ## How it works
 
@@ -42,15 +45,18 @@ flowchart LR
   C -->|no| E{Gradient key set?}
   E -->|yes| F[Gemma 4 31B on DigitalOcean Gradient]
   E -->|no| G[Gemma 3 270M on this machine]
-  F --> H[App adds where to stand and when the phone goes away]
-  G --> H
+  F --> K{Good line within 10 s?}
+  G --> K
+  K -->|yes| H[App adds where to stand and when the phone goes away]
+  K -->|no| L[Starter-deck card]
+  L --> H
   H --> I[Phone-away timer]
   I --> J[One private note in localStorage]
 ```
 
 ### Why the model only writes one sentence
 
-A 270M-parameter model will copy a long template. It will, however, finish a sentence that has already started. So the sentence stem is written in code, the model completes it, and a parser checks the result. If the output is empty, a copy of an example, or malformed, the app tries once more before returning an error.
+A 270M-parameter model will copy a long template. It will, however, finish a sentence that has already started. So the sentence stem is written in code, the model completes it, and a parser checks the result. If the output is empty, a copy of an example, or malformed, the app tries again, and after that it falls back to the starter deck instead of showing an error.
 
 Everything that must be correct stays in tested code, not in the model: the weather rules, the stay-in decision, the place line, and the timer.
 
@@ -59,7 +65,7 @@ Everything that must be correct stays in tested code, not in the model: the weat
 | Layer | Choice |
 | --- | --- |
 | Runtime | Node.js 20+, no web framework |
-| Local model | [`onnx-community/gemma-3-270m-it-ONNX`](https://huggingface.co/onnx-community/gemma-3-270m-it-ONNX), q4, via [Transformers.js](https://huggingface.co/docs/transformers.js) |
+| Local model | [`onnx-community/gemma-3-270m-it-ONNX`](https://huggingface.co/onnx-community/gemma-3-270m-it-ONNX), q8, via [Transformers.js](https://huggingface.co/docs/transformers.js) |
 | Hosted model | `gemma-4-31B-it` on [DigitalOcean Gradient serverless inference](https://docs.digitalocean.com/products/gradient-ai-platform/) |
 | Weather | [Open-Meteo](https://open-meteo.com/) forecast and geocoding APIs |
 | Front end | Plain HTML, CSS, and JavaScript |
@@ -71,7 +77,7 @@ Everything that must be correct stays in tested code, not in the model: the weat
 ### Requirements
 
 - Node.js 20 or newer
-- About 320 MB of free disk space for the local model (downloaded on first run)
+- A few hundred MB of free disk space for the local model (downloaded on first run)
 
 ### Run locally
 
@@ -100,6 +106,9 @@ Copy `.env.example` to `.env`, or set these variables on your host.
 | --- | --- | --- |
 | `PORT` | `4173` | HTTP port. |
 | `MODEL_ID` | `onnx-community/gemma-3-270m-it-ONNX` | Local model, used when no Gradient key is set. |
+| `MODEL_DTYPE` | `q8` | Quantization of the local model. |
+| `LOCAL_MODEL` | _on_ | Set to `off` to skip the local model (the Docker image does this). Cards then come from Gradient or the starter deck. |
+| `CARD_DEADLINE_MS` | `10000` | How long to wait for the model before using the starter deck. |
 | `DIGITALOCEAN_INFERENCE_KEY` | _unset_ | Gradient model access key. When set, cards are written by the hosted model. |
 | `DIGITALOCEAN_INFERENCE_URL` | `https://inference.do-ai.run/v1` | Gradient inference endpoint. |
 | `DIGITALOCEAN_INFERENCE_MODEL` | `gemma-4-31B-it` | Hosted model id. |
@@ -127,6 +136,8 @@ Then set the `DIGITALOCEAN_INFERENCE_KEY` secret on the new app.
 
 Check the deployment at `/api/health`. It reports the active backend (`digitalocean-gradient` or `local-gemma`) and the model in use.
 
+The live instance runs on a single $12/month App Platform container in Bangalore (BLR1). The container does not load the local model, because 1 GB of RAM is too little for it to run alongside the server.
+
 ## API
 
 | Method | Path | Description |
@@ -134,7 +145,7 @@ Check the deployment at `/api/health`. It reports the active backend (`digitaloc
 | `GET` | `/api/health` | Model status, backend, and any load error. |
 | `POST` | `/api/card` | Writes a card. Body: `{ "minutes": 10 \| 20 \| 40, "place": string, "sense": string, "city"?: string, "take"?: number }`. |
 
-If the weather says to stay in, `/api/card` returns `{ "stayIn": true, "reason": "..." }` and the model is not called.
+If the weather says to stay in, `/api/card` returns `{ "stayIn": true, "reason": "..." }` and the model is not called. Every other card includes `source` (`gemma` or `starter`) so the page can say who wrote it.
 
 ## Project structure
 

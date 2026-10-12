@@ -10,10 +10,10 @@ You choose 10, 20, or 40 minutes, a place to start (sidewalk, park, balcony, gar
 
 Then **Gemma** finishes one sentence: the thing you are going out to notice.
 
-- On a laptop: [Gemma 3 270M Instruct](https://huggingface.co/onnx-community/gemma-3-270m-it-ONNX), q4 ONNX, about 320MB, through [Transformers.js](https://huggingface.co/docs/transformers.js). After that download, the card does not need the network.
-- On DigitalOcean: the same app calls [Gradient serverless inference](https://docs.digitalocean.com/products/gradient-ai-platform/details/models/) with model id `gemma-4-31B-it`. The front end is meant to live on App Platform (`.do/app.yaml`).
+- On a laptop: [Gemma 3 270M Instruct](https://huggingface.co/onnx-community/gemma-3-270m-it-ONNX), q8 ONNX, through [Transformers.js](https://huggingface.co/docs/transformers.js). After that download, the card does not need the network.
+- On DigitalOcean: the same app calls [Gradient serverless inference](https://docs.digitalocean.com/products/gradient-ai-platform/details/models/) with model id `gemma-4-31B-it`. The app runs on App Platform: **[pocket-grass-ct89s.ondigitalocean.app](https://pocket-grass-ct89s.ondigitalocean.app/)**.
 
-The app, not the model, writes the other two lines. Where to stand. When the phone goes away. Thunder, snow, or a high wind never gets to the model. The page tells you to stay in. Those checks are unit-tested, and they run in GitHub Actions.
+The app, not the model, writes the other two lines. Where to stand. When the phone goes away. Thunder, snow, or a high wind never gets to the model. The page tells you to stay in. Those checks are unit-tested.
 
 You tap **I'm stepping out.** The page turns into a timer. The phone can go in a pocket. When it ends, you can keep one sentence on that device. It is not uploaded.
 
