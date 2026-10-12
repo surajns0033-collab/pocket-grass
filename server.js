@@ -14,6 +14,7 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(root, "public");
 const PORT = Number(process.env.PORT) || 4173;
 const MODEL_ID = process.env.MODEL_ID || "onnx-community/gemma-3-270m-it-ONNX";
+const MODEL_DTYPE = process.env.MODEL_DTYPE || "q8";
 const FAMILY = familyOf(MODEL_ID);
 const GRADIENT = gradientConfig();
 
@@ -40,7 +41,7 @@ function loadModel() {
     env.cacheDir = path.join(root, ".cache");
     health.status = "Loading Gemma 3 270M (first run downloads about 320MB)";
     const generator = await pipeline("text-generation", MODEL_ID, {
-      dtype: "q4",
+      dtype: MODEL_DTYPE,
       device: "cpu",
       progress_callback: (update) => {
         if (update.status === "progress" && update.file) {
@@ -70,7 +71,7 @@ async function writeCard({ minutes, place, sense, sky, take }) {
   let lastRaw = "";
   let skipId = "";
   const started = Date.now();
-  for (let attempt = 1; attempt <= 2; attempt++) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
     const example = retrieve(place, sense, sky.skyKind, skipId);
     const messages = buildMessages({
       placeLabel: PLACES[place],
