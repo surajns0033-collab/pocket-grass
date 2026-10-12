@@ -3,8 +3,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { MINUTES, PLACES, SENSES, retrieve } from "./lib/catalog.js";
-import { assemble, stem } from "./lib/assemble.js";
+import { MINUTES, PLACES, SENSES, retrieve, starter } from "./lib/catalog.js";
+import { assemble, fromStarter, stem } from "./lib/assemble.js";
 import { completeOnGradient, gradientConfig } from "./lib/gradient.js";
 import { newText, parseSpoken, tooClose } from "./lib/parse.js";
 import { buildMessages, familyOf, formatChat } from "./lib/prompt.js";
@@ -17,6 +17,7 @@ const MODEL_ID = process.env.MODEL_ID || "onnx-community/gemma-3-270m-it-ONNX";
 const MODEL_DTYPE = process.env.MODEL_DTYPE || "q8";
 const FAMILY = familyOf(MODEL_ID);
 const GRADIENT = gradientConfig();
+const CARD_DEADLINE_MS = Number(process.env.CARD_DEADLINE_MS) || 25000;
 
 const health = {
   ready: false,
@@ -84,12 +85,14 @@ async function writeCard({ minutes, place, sense, sky, take }) {
     if (GRADIENT) {
       raw = await completeOnGradient({ messages, lead });
     } else {
-      const prompt = `${formatChat(messages, FAMILY)}<<<\nNotice: ${lead}`;
+      const prompt = `${formatChat(messages, FAMILY)}${lead}`;
       const sample = attempt > 1 || take > 1;
-      const options = { max_new_tokens: 24, do_sample: sample };
+      const options = { max_new_tokens: 24, min_new_tokens: 3, repetition_penalty: 1.2, do_sample: sample };
       if (sample) options.temperature = 0.8;
       const output = await generator(prompt, options);
       raw = newText(output?.[0]?.generated_text, prompt);
+      const at = raw.lastIndexOf(lead.trim());
+      if (at !== -1) raw = raw.slice(at);
     }
     console.log(`attempt ${attempt}: ${raw.replace(/\s+/g, " ").slice(0, 240)}`);
     lastRaw = raw;
@@ -174,14 +177,6 @@ const server = http.createServer(async (req, res) => {
       return;
     }
     if (req.method === "POST" && url.pathname === "/api/card") {
-      if (health.error) {
-        send(res, 500, { error: health.error });
-        return;
-      }
-      if (busy) {
-        send(res, 429, { error: "Still writing the previous card." });
-        return;
-      }
       const body = await readJson(req);
       const minutes = Number(body.minutes);
       const place = body.place;
@@ -197,21 +192,33 @@ const server = http.createServer(async (req, res) => {
         send(res, 200, { stayIn: true, reason: sky.reason, sky, model: health.model, backend: health.backend });
         return;
       }
-      busy = true;
-      try {
-        const written = await writeCard({ minutes, place, sense, sky, take });
-        send(res, 200, {
-          stayIn: false,
-          card: written.card,
-          ms: written.ms,
-          attempts: written.attempts,
-          sky,
-          minutes,
-          model: health.model,
-          backend: health.backend,
+      const reply = { stayIn: false, sky, minutes, model: health.model, backend: health.backend };
+      let written = null;
+      let why = "";
+      if (!health.ready) {
+        why = "loading";
+      } else if (busy) {
+        why = "busy";
+      } else {
+        busy = true;
+        const started = Date.now();
+        const job = writeCard({ minutes, place, sense, sky, take }).finally(() => {
+          busy = false;
         });
-      } finally {
-        busy = false;
+        written = await Promise.race([
+          job,
+          new Promise((resolve) => setTimeout(() => resolve(null), CARD_DEADLINE_MS)),
+        ]).catch((error) => {
+          console.error(`card failed: ${error.message}`);
+          return null;
+        });
+        if (!written) why = Date.now() - started >= CARD_DEADLINE_MS ? "slow" : "unusable";
+      }
+      if (written) {
+        send(res, 200, { ...reply, source: "gemma", card: written.card, ms: written.ms, attempts: written.attempts });
+      } else {
+        const item = starter(place, sense, sky.skyKind, take);
+        send(res, 200, { ...reply, source: "starter", why, card: fromStarter(minutes, place, sky, item), ms: 0 });
       }
       return;
     }

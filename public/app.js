@@ -61,12 +61,19 @@ async function poll() {
     const response = await fetch("/api/health");
     const data = await response.json();
     ready = Boolean(data.ready);
-    statusEl.textContent = data.error || data.status || "Loading Gemma…";
-    writeBtn.disabled = !ready;
-    if (!ready && !data.error) setTimeout(poll, 1000);
+    if (ready) {
+      statusEl.textContent = data.backend === "digitalocean-gradient"
+        ? "Gemma 4 on DigitalOcean is ready."
+        : "Gemma is ready.";
+    } else if (data.error) {
+      statusEl.textContent = "Gemma is unavailable right now. You'll get a card from the starter deck.";
+    } else {
+      statusEl.textContent = "Gemma is warming up. You can start now; your first card may come from the starter deck.";
+      setTimeout(poll, 2000);
+    }
   } catch {
-    statusEl.textContent = "The server is not running. Start it with npm start, then refresh.";
-    setTimeout(poll, 2000);
+    statusEl.textContent = "Can't reach the server. Check your connection and refresh.";
+    setTimeout(poll, 3000);
   }
 }
 
@@ -100,13 +107,17 @@ function renderCard(data) {
     : sky.used
       ? "The sky could not be checked. Look up before you go."
       : "Sky not checked. Look up before you go.";
-  document.querySelector("#card-model").textContent = `Written on this computer in ${Math.max(1, Math.round(data.ms / 1000))}s.`;
+  const seconds = Math.max(1, Math.round(data.ms / 1000));
+  document.querySelector("#card-model").textContent = data.source === "gemma"
+    ? data.backend === "digitalocean-gradient"
+      ? `Noticing line by Gemma 4 on DigitalOcean, in ${seconds}s.`
+      : `Noticing line by Gemma 3 270M, in ${seconds}s.`
+    : "From the starter deck, written by hand. Gemma was not ready in time.";
   show("card");
 }
 
 setupEl.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!ready) return;
   formError.textContent = "";
   writeBtn.disabled = true;
   let seconds = 0;
@@ -130,11 +141,11 @@ setupEl.addEventListener("submit", async (event) => {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "The card did not come back.");
     renderCard(data);
-  } catch (error) {
-    formError.textContent = error.message;
+  } catch {
+    formError.textContent = "Couldn't get a card. Check your connection and try again.";
   } finally {
     window.clearInterval(clock);
-    writeBtn.disabled = !ready;
+    writeBtn.disabled = false;
     writeBtn.textContent = "Write my card";
   }
 });

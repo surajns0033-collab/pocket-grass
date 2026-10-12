@@ -12,7 +12,7 @@
     <header id="top">
       <p class="brand">Pocket Grass</p>
       <p class="tag">Read one card. Then the phone goes away.</p>
-      <p id="model-status" role="status">Loading the open model…</p>
+      <p id="model-status" role="status">Checking on Gemma…</p>
       <p id="last-note" hidden></p>
     </header>
 
@@ -54,7 +54,7 @@
           <input id="city" name="city" maxlength="80" autocomplete="address-level2" placeholder="Optional" />
         </label>
 
-        <button id="write" class="primary" type="submit" disabled>Write my card</button>
+        <button id="write" class="primary" type="submit">Write my card</button>
         <p id="form-error" class="error" role="alert"></p>
       </form>
 
@@ -99,8 +99,9 @@
     </main>
 
     <footer>
-      Gemma writes the noticing line. Locally that is Gemma 3 270M. On DigitalOcean it can be Gemma 4 through Gradient.
-      Weather, when you ask for it, is from <a href="https://open-meteo.com/">Open-Meteo</a>.
+      Your notes stay on this device. No account, no tracking.
+      Cards by Google's open Gemma model · weather by <a href="https://open-meteo.com/">Open-Meteo</a> ·
+      <a href="https://github.com/surajns0033-collab/pocket-grass">source</a>
     </footer>
     <noscript>Pocket Grass needs JavaScript. The model runs on the computer that serves this page.</noscript>
     <script src="/app.js"></script>

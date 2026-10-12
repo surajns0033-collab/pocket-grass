@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { newText, parseCard, parseSpoken, tooClose } from "../lib/parse.js";
-import { retrieve } from "../lib/catalog.js";
-import { whereLine } from "../lib/assemble.js";
+import { retrieve, starter } from "../lib/catalog.js";
+import { fromStarter, whereLine } from "../lib/assemble.js";
 import { assess, describe } from "../lib/weather.js";
 import { familyOf, formatChat } from "../lib/prompt.js";
 
@@ -71,6 +71,19 @@ test("Gemma chat wraps the system line into the first user turn", () => {
   assert.match(prompt, /<start_of_turn>user\nBe brief.\n\nFinish the sentence.<end_of_turn>/);
   assert.match(prompt, /<start_of_turn>model\n$/);
   assert.equal(familyOf("onnx-community/gemma-3-270m-it-ONNX"), "gemma");
+});
+
+test("a reply that repeats the stem is rejected", () => {
+  assert.equal(parseSpoken("Listen until you hear Listen until you hear", "Listen until you hear "), null);
+});
+
+test("starter deck always gives a card and rotates on another take", () => {
+  const sky = { summary: "clear", isDay: true, tempC: 22 };
+  const first = fromStarter(20, "park", sky, starter("park", "plants", "clear", 1));
+  const second = fromStarter(20, "park", sky, starter("park", "plants", "clear", 2));
+  assert.ok(first.title && first.where && first.notice && first.pocket);
+  assert.notEqual(first.notice, second.notice);
+  assert.match(first.pocket, /20 minutes/);
 });
 
 test("rain adds a cover constraint and does not stay-in by itself", () => {
