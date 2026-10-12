@@ -17,7 +17,7 @@ const MODEL_ID = process.env.MODEL_ID || "onnx-community/gemma-3-270m-it-ONNX";
 const MODEL_DTYPE = process.env.MODEL_DTYPE || "q8";
 const FAMILY = familyOf(MODEL_ID);
 const GRADIENT = gradientConfig();
-const CARD_DEADLINE_MS = Number(process.env.CARD_DEADLINE_MS) || 25000;
+const CARD_DEADLINE_MS = Number(process.env.CARD_DEADLINE_MS) || 10000;
 
 const health = {
   ready: false,
