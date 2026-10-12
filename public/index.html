@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1e4a38" />
+    <title>Pocket Grass</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍃</text></svg>" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header id="top">
+      <p class="brand">Pocket Grass</p>
+      <p class="tag">Read one card. Then the phone goes away.</p>
+      <p id="model-status" role="status">Loading the open model…</p>
+      <p id="last-note" hidden></p>
+    </header>
+
+    <main>
+      <form id="setup">
+        <fieldset>
+          <legend>How long can you be outside?</legend>
+          <div class="choices" id="minutes">
+            <button type="button" data-value="10" aria-pressed="false">10 min<span>Around the block</span></button>
+            <button type="button" data-value="20" aria-pressed="true">20 min<span>Long enough to notice</span></button>
+            <button type="button" data-value="40" aria-pressed="false">40 min<span>A real walk</span></button>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Where are you starting?</legend>
+          <div class="choices" id="place">
+            <button type="button" data-value="sidewalk" aria-pressed="false">Sidewalk</button>
+            <button type="button" data-value="park" aria-pressed="true">Park</button>
+            <button type="button" data-value="balcony" aria-pressed="false">Balcony</button>
+            <button type="button" data-value="garden" aria-pressed="false">Garden</button>
+            <button type="button" data-value="trail" aria-pressed="false">Trail</button>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>What do you notice first?</legend>
+          <div class="choices" id="sense">
+            <button type="button" data-value="birds" aria-pressed="false">Birds</button>
+            <button type="button" data-value="plants" aria-pressed="true">Plants</button>
+            <button type="button" data-value="sky" aria-pressed="false">Sky</button>
+            <button type="button" data-value="soil" aria-pressed="false">Ground</button>
+            <button type="button" data-value="quiet" aria-pressed="false">Quiet</button>
+          </div>
+        </fieldset>
+
+        <label class="city">
+          City, if you want the sky checked
+          <input id="city" name="city" maxlength="80" autocomplete="address-level2" placeholder="Optional" />
+        </label>
+
+        <button id="write" class="primary" type="submit" disabled>Write my card</button>
+        <p id="form-error" class="error" role="alert"></p>
+      </form>
+
+      <article id="result" hidden>
+        <p class="eyebrow">Your card</p>
+        <h1 id="card-title"></h1>
+        <p id="card-sky" class="meta"></p>
+        <h2>Go here</h2>
+        <p id="card-where"></p>
+        <h2>Notice this</h2>
+        <p id="card-notice"></p>
+        <h2>Then</h2>
+        <p id="card-pocket"></p>
+        <p id="card-model" class="meta"></p>
+        <div id="go-actions">
+          <button id="step-out" class="primary" type="button">I'm stepping out</button>
+          <button id="practice" class="ghost" type="button">Practice the ending (15 seconds)</button>
+          <button id="again" class="texty" type="button">Write a different card</button>
+        </div>
+        <div id="stay" hidden>
+          <h1 id="stay-title">Stay in</h1>
+          <p id="stay-reason"></p>
+          <button id="stay-back" class="primary" type="button">Change the plan</button>
+        </div>
+      </article>
+
+      <section id="outside" hidden>
+        <p id="out-kicker" class="eyebrow">Phone away</p>
+        <p id="timer" class="timer">20:00</p>
+        <h1 id="out-notice"></h1>
+        <p id="out-hint">Leave this page open. The phone can go in a pocket.</p>
+        <button id="came-back" class="primary" type="button" hidden>I came back</button>
+        <form id="note-form" hidden>
+          <label>
+            One thing you noticed
+            <textarea id="note" rows="3" maxlength="240" placeholder="One sentence"></textarea>
+          </label>
+          <button class="primary" type="submit">Keep it on this device</button>
+        </form>
+        <button id="out-back" class="texty" type="button">Not yet — back to the card</button>
+      </section>
+    </main>
+
+    <footer>
+      Gemma writes the noticing line. Locally that is Gemma 3 270M. On DigitalOcean it can be Gemma 4 through Gradient.
+      Weather, when you ask for it, is from <a href="https://open-meteo.com/">Open-Meteo</a>.
+    </footer>
+    <noscript>Pocket Grass needs JavaScript. The model runs on the computer that serves this page.</noscript>
+    <script src="/app.js"></script>
+  </body>
+</html>

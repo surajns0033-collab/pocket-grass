@@ -1,0 +1,18 @@
+{
+  "name": "pocket-grass",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A local open-weight model writes a short outdoor card, then the phone goes away.",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.7.5"
+  }
+}
