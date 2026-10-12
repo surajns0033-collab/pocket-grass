@@ -22,6 +22,12 @@ Pocket Grass is a small web app for people who keep meaning to go outside and do
 
 You choose how long you have, where you are standing, and what you want to notice first. A Gemma model finishes **one sentence** about what to notice. The app adds where to stand and when the phone goes away. You tap **I'm stepping out**, the screen turns into a countdown, and when it ends you can keep one sentence about the walk on your own device.
 
+<p align="center">
+  <img src="docs/start.png" alt="Choose time, place, and what to notice" width="30%">
+  <img src="docs/card.png" alt="A card for birds in Pune with the sky checked" width="30%">
+  <img src="docs/timer.png" alt="The phone-away countdown" width="30%">
+</p>
+
 It is built for the [Hacktoberfest Open-Source AI Challenge, Week 1: Touch Grass](https://dev.to/challenges/hacktoberfest-week1-2026-10-05).
 
 ## Features

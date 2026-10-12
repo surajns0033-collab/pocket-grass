@@ -35,7 +35,9 @@ I have not walked this one yet. The practice timer (15 seconds) runs on the same
 
 The first prompts asked for four labeled lines. The small model copied them. It copied the angle brackets. One generation told me to sweep steps in Pune with a broom.
 
-A small open model will echo a template. It will finish a sentence that has already started. So the sentence starts in code. At night, or in the rain, or when you asked for birds or quiet, the start is about sound. If the ending repeats the prompt or sprouts a number, it is thrown out and tried once more. If it still fails, the page shows an error. It does not substitute a canned outing.
+A small open model will echo a template. It will finish a sentence that has already started. So the sentence starts in code. At night, or in the rain, or when you asked for birds or quiet, the start is about sound. If the ending repeats the prompt or sprouts a number, it is thrown out and tried again.
+
+My first version showed an error when that kept failing. Then I watched it happen on the hosted copy: a spinner, a wait, then an apology. That is exactly the screen time the app is supposed to cut. Now, if Gemma is warming up, busy, slower than ten seconds, or still wrong, the card comes from a small hand-written starter deck matched to your place, your sense, and the sky. The card says which one wrote it, so you always know.
 
 That is why Gemma belongs here. I could read the bad text on this machine and change the job until it fit. The same Gemma family then runs larger, as Gemma 4, on DigitalOcean Gradient when a key is present. A closed API would have written a smoother paragraph, and the plan would have left the house to do it.
 
@@ -43,7 +45,11 @@ People already running Transformers.js on their own machines describe the same t
 
 ## Try it
 
+Live: [pocket-grass-ct89s.ondigitalocean.app](https://pocket-grass-ct89s.ondigitalocean.app/) (no sign-in)
+
 Repo: [github.com/surajns0033-collab/pocket-grass](https://github.com/surajns0033-collab/pocket-grass)
+
+To run it on your own machine, with Gemma 3 270M and no network after the first download:
 
 ```bash
 npm install
@@ -60,16 +66,16 @@ flowchart LR
   C -->|no| E{Gradient key?}
   E -->|yes| F[Gemma 4 on DigitalOcean]
   E -->|no| G[Gemma 3 270M on this machine]
-  F --> H[App adds where and pocket]
-  G --> H
+  F --> K{Good line in 10 s?}
+  G --> K
+  K -->|yes| H[App adds where and pocket]
+  K -->|no| L[Starter-deck card]
+  L --> H
   H --> I[Phone-away timer]
 ```
 
 ## Prize categories
 
 - **Best Use of Gemma** — Gemma 3 270M locally (ONNX, Transformers.js). Gemma 4 31B Instruct on DigitalOcean Gradient (`gemma-4-31B-it`) when a model access key is set.
-- **Best Use of DigitalOcean** — the Node app is specified for App Platform in `.do/app.yaml`. Card writing on the hosted path goes through Gradient's OpenAI-compatible endpoint at `https://inference.do-ai.run/v1`.
-- **Best Use of GitHub Copilot** — GitHub Actions runs `npm test` on every push (`.github/workflows/test.yml`). Copilot project notes are in `.github/copilot-instructions.md`.
-- **Best Use of Entire** — the agent session that built this, saved through DevRelay, is embedded below when the draft is published.
-
-{% agent_session SESSION_ID %}
+- **Best Use of DigitalOcean** — the app is live on App Platform (one container in Bangalore, built from the `Dockerfile`, redeployed on every push to `main`). Card writing on the hosted path goes through Gradient's OpenAI-compatible endpoint at `https://inference.do-ai.run/v1`. The container does not load the local model: on 1 GB of RAM it crashed the server, which is why the starter deck exists.
+- **Best Use of GitHub Copilot** — the repo carries Copilot project instructions in `.github/copilot-instructions.md`, so a Copilot agent working on it knows the rules: the model only finishes one sentence, and safety stays in code.
