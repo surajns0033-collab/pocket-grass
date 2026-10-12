@@ -18,6 +18,7 @@ const MODEL_DTYPE = process.env.MODEL_DTYPE || "q8";
 const FAMILY = familyOf(MODEL_ID);
 const GRADIENT = gradientConfig();
 const CARD_DEADLINE_MS = Number(process.env.CARD_DEADLINE_MS) || 10000;
+const LOCAL_MODEL = process.env.LOCAL_MODEL !== "off";
 
 const health = {
   ready: false,
@@ -34,6 +35,11 @@ function loadModel() {
   if (GRADIENT) {
     health.ready = true;
     health.status = `Gemma on DigitalOcean Gradient (${GRADIENT.model}).`;
+    return Promise.resolve(null);
+  }
+  if (!LOCAL_MODEL) {
+    health.status = "No Gradient key set; cards come from the starter deck.";
+    health.starterOnly = true;
     return Promise.resolve(null);
   }
   if (generatorPromise) return generatorPromise;
@@ -197,13 +203,13 @@ const server = http.createServer(async (req, res) => {
       let why = "";
       if (!health.ready) {
         why = "loading";
-      } else if (busy) {
+      } else if (busy && !GRADIENT) {
         why = "busy";
       } else {
-        busy = true;
+        if (!GRADIENT) busy = true;
         const started = Date.now();
         const job = writeCard({ minutes, place, sense, sky, take }).finally(() => {
-          busy = false;
+          if (!GRADIENT) busy = false;
         });
         written = await Promise.race([
           job,

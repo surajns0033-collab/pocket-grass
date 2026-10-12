@@ -65,6 +65,8 @@ async function poll() {
       statusEl.textContent = data.backend === "digitalocean-gradient"
         ? "Gemma 4 on DigitalOcean is ready."
         : "Gemma is ready.";
+    } else if (data.starterOnly) {
+      statusEl.textContent = "Ready.";
     } else if (data.error) {
       statusEl.textContent = "Gemma is unavailable right now. You'll get a card from the starter deck.";
     } else {
@@ -112,7 +114,7 @@ function renderCard(data) {
     ? data.backend === "digitalocean-gradient"
       ? `Noticing line by Gemma 4 on DigitalOcean, in ${seconds}s.`
       : `Noticing line by Gemma 3 270M, in ${seconds}s.`
-    : "From the starter deck, written by hand. Gemma was not ready in time.";
+    : "From the hand-written starter deck.";
   show("card");
 }
 

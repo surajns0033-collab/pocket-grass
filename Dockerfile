@@ -7,5 +7,6 @@ COPY public ./public
 COPY server.js ./
 ENV NODE_ENV=production
 ENV PORT=4173
+ENV LOCAL_MODEL=off
 EXPOSE 4173
 CMD ["node", "server.js"]
